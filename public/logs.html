@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Log das leituras de cartões</title>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-top: 20px;
+      color: #333;
+    }
+    .log-container {
+      width: 80%;
+      max-width: 800px;
+      margin: 20px 0;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .log-entry {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      transition: background-color 0.3s;
+    }
+    .log-entry:hover {
+      background-color: #f9f9f9;
+    }
+    .log-entry.recent-log {
+      background-color: #fffacd;
+    }
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+    .tag {
+      font-weight: bold;
+    }
+    .timestamp {
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Logs das leituras de cartões</h1>
+  <div class="log-container">
+    <div id="logList"></div>
+  </div>
+  <script>
+    const DateTime = luxon.DateTime;
+
+    async function fetchLogs() {
+      const response = await fetch('/api/rfid-logs');
+      const data = await response.json();
+      return data;
+    }
+
+    function formatTimestamp(timestamp) {
+      const dt = DateTime.fromISO(timestamp, { zone: 'utc' });
+      const dtInBrazil = dt.setZone('America/Sao_Paulo');
+      return dtInBrazil.toFormat('yyyy-MM-dd HH:mm:ss');
+    }
+
+    async function updateLogs() {
+      const logs = await fetchLogs();
+      const logList = document.getElementById('logList');
+      logList.innerHTML = '';
+      logs.forEach((log, index) => {
+        const div = document.createElement('div');
+        div.classList.add('log-entry');
+        if (index === 0) {
+          div.classList.add('recent-log');
+        }
+        const tagSpan = document.createElement('span');
+        tagSpan.classList.add('tag');
+        tagSpan.textContent = `Tag: ${log.tag}`;
+        const timestampSpan = document.createElement('span');
+        timestampSpan.classList.add('timestamp');
+        timestampSpan.textContent = `Data e hora: ${formatTimestamp(log.timestamp)}`;
+        div.appendChild(tagSpan);
+        div.appendChild(timestampSpan);
+        logList.appendChild(div);
+      });
+    }
+
+    // Initialize logs
+    updateLogs();
+  </script>
+</body>
+</html>

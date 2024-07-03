@@ -59,8 +59,23 @@ app.get('/api/rfid-all', (req, res) => {
   });
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('/api/rfid-logs', (req, res) => {
+  const sql = 'SELECT tag, timestamp FROM rfid_tags ORDER BY timestamp DESC';
+  db.query(sql, (err, results) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get('/logs', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'logs.html'));
+});
+
+app.get('/chart', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'chart.html'));
 });
 
 app.listen(port, () => {
